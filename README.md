@@ -1,16 +1,15 @@
-![20250202143254](.\images\20250202143254.png)
+[ComicReader/images/20250202143254.png at main · kchsunny/ComicReader (github.com)](https://github.com/kchsunny/ComicReader/blob/main/images/20250202143254.png)
 
-![20250202144324](.\images\20250202144324.png)
+[ComicReader/images/20250202144324.png at main · kchsunny/ComicReader (github.com)](https://github.com/kchsunny/ComicReader/blob/main/images/20250202144324.png)
 
-![20250202144520](.\images\20250202144520.png)
+[ComicReader/images/20250202144520.png at main · kchsunny/ComicReader (github.com)](https://github.com/kchsunny/ComicReader/blob/main/images/20250202144520.png)
 
-![20250202144813](.\images\20250202144813.png)
+[ComicReader/images/20250202144813.png at main · kchsunny/ComicReader (github.com)](https://github.com/kchsunny/ComicReader/blob/main/images/20250202144813.png)
 
 
 
 双击封面即可阅读。可用快捷键：A（前一页）,W（上滚）,S（下滚）,D（下一页）
 
-![20250202144943](.\images\20250202144943.png)
+[ComicReader/images/20250202144943.png at main · kchsunny/ComicReader (github.com)](https://github.com/kchsunny/ComicReader/blob/main/images/20250202144943.png)
 
 对于首次加载图片数量很多的漫画会卡几秒钟
-
