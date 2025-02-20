@@ -412,6 +412,45 @@ def rename_list(new_list_name, old_list_name):
     return False
 
 
+def delete_not_exist_comic_from_library(library_info_path, library_name):
+    db = QSqlDatabase("QSQLITE")
+    db.setDatabaseName(replace_path(os.path.join(library_info_path, "comics.comic")))
+    print(library_info_path, library_name)
+    if db.open():
+        query = QSqlQuery(db)
+        query_delete = QSqlQuery(db)
+        if "comics" not in db.tables():
+            db.exec("""
+                       CREATE TABLE IF NOT EXISTS comics(
+                           id INTEGER PRIMARY KEY AUTOINCREMENT,
+                           name TEXT NOT NULL,
+                           library_path TEXT NOT NULL,
+                           library_info_path TEXT NOT NULL,
+                           pages INTEGER NOT NULL,
+                           belong_path TEXT NOT NULL,
+                           dir_name TEXT NOT NULL,
+                           library_name TEXT NOT NULL,
+                           cover TEXT,
+                           read_pages INTEGER DEFAULT 0,
+                           collected BOOLEAN DEFAULT 0
+                       )
+                   """)
+            # return
+        # 如果已经存在相同信息，提前返回：用于更新库信息时
+        query.exec(f"""
+               SELECT * FROM comics 
+               WHERE library_name = '{library_name}'
+               """)
+
+        while query.next():
+            # print("----", query.value('id'), query.value('belong_path'), query.value('name'))
+            if not os.path.exists(os.path.join(query.value('belong_path'), query.value('name'))):
+                query_delete.exec(f"DELETE FROM comics WHERE id={query.value('id')}")
+
+        db.close()
+        return
+
+
 def print_or_not(strs, p=True):
     if p:
         print(strs)

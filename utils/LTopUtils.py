@@ -42,6 +42,7 @@ class CreateStorageThreat(QThread):
     def run(self) -> None:
         self.comics_list = []
         self.find_all_comics(self.library_path, os.path.basename(self.library_path))
+        delete_not_exist_comic_from_library(self.library_info_path, self.library_name)
         for i in range(len(self.comics_list)):
             self.t = check_exist_comic(self.library_info_path, self.comics_list[i][1], self.comics_list[i][0], self.library_name)
             if self.t[0]:
@@ -582,6 +583,37 @@ class LTopItem(QWidget, bookDirArea0111_1):
             db.exec(f"DELETE FROM library WHERE id = {self.l_id}")
             self.deleteLater()
         super().mousePressEvent(event)
+
+    def update_mid_item(self):
+        library_info_path = self.comic_info_db
+        if os.path.exists(library_info_path):
+            db = QSqlDatabase("QSQLITE")
+            db.setDatabaseName(library_info_path)
+            db.open()
+            query = QSqlQuery(db)
+            info_list = []
+            # PreviewItem(pixmap_cover, book_name, comic_path, view_width, library_path,
+            #                                       belong_path, is_collected = False, right_area = None)
+            query.exec(f"""
+                        SELECT DISTINCT belong_path, name, cover, collected, library_path, library_name, read_pages, pages
+                        FROM comics 
+                        WHERE library_name='{self.library_old_name}'
+                        ORDER BY name
+                    """)
+            start = time.time()
+            while query.next():
+                # print(f"查询到：{query.value(0)}, {query.value(1)}, {query.value(5), query.value(6), query.value(7)}")
+                info_list.append([replace_path(os.path.join(query.value(0), query.value(1))),
+                                  query.value(1), query.value(2), query.value(3), query.value(4),
+                                  query.value(5), query.value(0), query.value(6), query.value(7)])
+            sub_start = time.time()
+            print("LTopUtils mousePressEvent: 查询时间：", sub_start - start)
+
+            self.shelf.findChild(QWidget, "RightArea").libraryPath = self.library_path
+            self.shelf.findChild(QWidget, "RightArea").set_previews(info_list, 1)
+            end_time = time.time()
+            print("LTopUtils mousePressEvent: 加载图片时间总耗时：", end_time - sub_start)
+            self.shelf.findChild(QWidget, 'LMidMenu').update_item(self.comic_info_db, self.library_old_name)
 
     def set_l_mid_item(self, library_info_path):
         db = QSqlDatabase("QSQLITE")
