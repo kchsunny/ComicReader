@@ -411,7 +411,7 @@ def rename_list(new_list_name, old_list_name):
             return True
     return False
 
-
+# 更新库时，删除因更改文件名、删除文件而导致的数据库中找不到的漫画
 def delete_not_exist_comic_from_library(library_info_path, library_name):
     db = QSqlDatabase("QSQLITE")
     db.setDatabaseName(replace_path(os.path.join(library_info_path, "comics.comic")))

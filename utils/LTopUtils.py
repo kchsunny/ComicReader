@@ -41,8 +41,61 @@ class CreateStorageThreat(QThread):
 
     def run(self) -> None:
         self.comics_list = []
+        # 获取该库所在文件夹下所有漫画
         self.find_all_comics(self.library_path, os.path.basename(self.library_path))
-        delete_not_exist_comic_from_library(self.library_info_path, self.library_name)
+        # delete_not_exist_comic_from_library(self.library_info_path, self.library_name)
+        # 更新库时，删除因更改文件名、删除文件而导致的数据库中找不到的漫画
+        db = QSqlDatabase("QSQLITE")
+        db.setDatabaseName(replace_path(os.path.join(self.library_info_path, "comics.comic")))
+        print_or_not(self.library_info_path, self.library_path)
+        if db.open():
+            query = QSqlQuery(db)
+            query_delete = QSqlQuery(db)
+            if "comics" not in db.tables():
+                db.exec("""
+                               CREATE TABLE IF NOT EXISTS comics(
+                                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                   name TEXT NOT NULL,
+                                   library_path TEXT NOT NULL,
+                                   library_info_path TEXT NOT NULL,
+                                   pages INTEGER NOT NULL,
+                                   belong_path TEXT NOT NULL,
+                                   dir_name TEXT NOT NULL,
+                                   library_name TEXT NOT NULL,
+                                   cover TEXT,
+                                   read_pages INTEGER DEFAULT 0,
+                                   collected BOOLEAN DEFAULT 0
+                               )
+                           """)
+                # return
+            # 如果已经存在相同信息，提前返回：用于更新库信息时
+            query.exec(f"""
+                       SELECT COUNT(*) FROM comics 
+                       WHERE library_name = '{self.library_name}'
+                       """)
+            query.next()
+            total = query.value(0)
+            query.exec(f"""
+                       SELECT * FROM comics 
+                       WHERE library_name = '{self.library_name}'
+                       """)
+            count = 0
+            while query.next():
+                # print("----", query.value('id'), query.value('belong_path'), query.value('name'))
+                count += 1
+                # 停止进程
+                if not self.running:
+                    break
+                b_p = query.value('belong_path')
+                c_n = query.value('name')
+                s = f'检查漫画是否存在：{b_p}-->{c_n} 存在……'
+                if not os.path.exists(os.path.join(b_p, c_n)):
+                    query_delete.exec(f"DELETE FROM comics WHERE id={query.value('id')}")
+                    s = f'检查漫画是否存在：{b_p}-->{c_n} 不存在，删除……'
+                self.process_signal.emit(count, total, s)
+
+            db.close()
+        # 将没有的漫画添加到库
         for i in range(len(self.comics_list)):
             self.t = check_exist_comic(self.library_info_path, self.comics_list[i][1], self.comics_list[i][0], self.library_name)
             if self.t[0]:
