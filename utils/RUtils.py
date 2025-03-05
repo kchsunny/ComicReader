@@ -320,7 +320,7 @@ class LTopPreviewItem(QWidget, part4_pre_Item.Ui_Form):
     def read_self(self):
         viewer = ImageViewer(load_last=False)
         viewer.load_old_comic(self.comic_path, self.library_name, self.library_path, self.comic_name, self.belong_path)
-        viewer.show()
+        # viewer.show()
         pass
 
     def collect_self(self):
@@ -469,7 +469,7 @@ class LBottomPreviewItem(QWidget, part4_pre_Item.Ui_Form):
     def read_self(self):
         viewer = ImageViewer()
         viewer.load_old_comic(self.comic_path, self.comic_name)
-        viewer.show()
+        # viewer.show()
         pass
 
     def delete_self(self):

@@ -1,17 +1,15 @@
 import sys
 import time
 import zipfile
-import rarfile
+# import rarfile
 import os
 import PySide6
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QScrollArea, QLabel, QFileDialog, QMessageBox,QFrame
-from PySide6.QtGui import QPixmap, QImage, QIcon
-from PySide6.QtSql import *
+from PySide6.QtWidgets import QApplication, QWidget, QLabel, QFileDialog, QMessageBox
+from PySide6.QtGui import QPixmap, QIcon
+from PySide6.QtSql import QSqlDatabase, QSqlQuery
 from PySide6.QtCore import Qt, QTimer, QSettings, QThread, Signal
-from PIL import Image
 from UIParts.reader import Ui_Form as Reader
 from utils import img_sort, replace_path, save_comic_pages_info
-import re
 from UIParts import load_new_comic_process
 from PIL import Image
 
@@ -38,8 +36,6 @@ class LoadComicThread(QThread):
         self.loading()
 
     def loading(self):
-        # self.load_process.show()
-        # self.load_process_thread.start()
         start = time.time()
         with zipfile.ZipFile(self.parent.file_path, 'r') as zip_ref:
             # 将图片文件添加到列表
@@ -69,14 +65,8 @@ class LoadComicThread(QThread):
                     label.setScaledContents(True)
                     self.parent.labels[page_name] = label
                     self.parent.fill_contents(label)
-                    num += 1
                 self.loading_process.emit(num, total)
-        print("393 从压缩包加载页面数据耗时：", time.time() - start)
-
-        # self.parent.scrollAreaWidgetContents.setFixedHeight(self.parent.totalHeight)
-        # # 按图片顺序存储每张图片缩放后的高度
-        # for i, n in enumerate(self.parent.imageListName):
-        #     self.parent.size_scale_height.append(self.parent.size_scale[n][1])
+        # print("393 从压缩包加载页面数据耗时：", time.time() - start)
         self.loading_finish.emit()
 
 
@@ -96,7 +86,7 @@ class ImageViewer(QWidget, Reader):
         self.pushButton.clicked.connect(self.get_file)
         self.current_index = 0  # 当前图片所在序号
         self.imageListName = []  # 所有图片的名称列表
-        self.totalHeight = 0  # 所有缩放图片的总高度
+        self.totalHeight = 1  # 所有缩放图片的总高度
         self.labels = {}  # 按图片名称展示每张图片的容器
         self.size_origin = {}  # 按图片名称存放每张图片的原始的大小
         self.size_scale = {}  # 按图片名称存放每张图片缩放后的大小
@@ -130,14 +120,17 @@ class ImageViewer(QWidget, Reader):
         self.library_path = None
         self.comic_name = None
         self.belong_path = None
-        if load_last:
-            self.load_last_comic()
         self.load_process = LoadComicProcess()
+        self.load_process.setWindowIcon(QIcon("./resource/reading_black.png"))
+        self.load_process.setWindowTitle("初始化页面")
         self.load_process_thread = LoadComicThread(self)
         self.load_process_thread.loading_process.connect(self.loading)
         self.load_process_thread.loading_finish.connect(self.loading_finish)
+        if load_last:
+            self.load_last_comic()
 
     def loading(self, n, total):
+        # print_(f"阅读器：def loading(self, {n}, {total}):")
         self.load_process.progressBar.setValue(n)
         self.load_process.progressBar.setMaximum(total)
         pass
@@ -145,29 +138,24 @@ class ImageViewer(QWidget, Reader):
     def loading_finish(self):
         self.load_process.progressBar.setValue(0)
         self.load_process.hide()
+        print_(f"阅读器：def loading_finish(self):{self.file_path}, {self.imageListName}")
+        self.load_old_comic(self.file_path, self.library_name, self.library_path, self.comic_name, self.belong_path)
 
-        self.scrollAreaWidgetContents.setFixedHeight(self.totalHeight)
-        # 按图片顺序存储每张图片缩放后的高度
-        for i, n in enumerate(self.imageListName):
-            self.size_scale_height.append(self.size_scale[n][1])
-
-        if self.open_type == 'get_file':
-            print('154 get_file')
-            self.lineEdit.setText("1")
-            self.get_location(self.scrollArea.verticalScrollBar().value())  # 第二部展示当前进度应该展示的几张图片
-            self.setWindowTitle(f"阅读器:{os.path.basename(self.file_path)[:-4]}")
-        elif self.open_type == 'load_old_comic_2':
-            print('168 load_old_comic_2')
-            self.lineEdit.setText("1")
-            self.get_location(self.scrollArea.verticalScrollBar().value())  # 第二部展示当前进度应该展示的几张图片
-            self.setWindowTitle(f"阅读器:{os.path.basename(self.file_path)[:-4]}")
-        self.load_finish = True
-        self.resize_timer_event()
-        self.show()
+        # self.scrollAreaWidgetContents.setFixedHeight(self.totalHeight)
+        # # 按图片顺序存储每张图片缩放后的高度
+        # for i, n in enumerate(self.imageListName):
+        #     self.size_scale_height.append(self.size_scale[n][1])
+        #
+        # self.lineEdit.setText("1")
+        # self.get_location(self.scrollArea.verticalScrollBar().value())  # 第二部展示当前进度应该展示的几张图片
         # self.jump_to_page()
+        # self.setWindowTitle(f"阅读器:{os.path.basename(self.file_path)[:-4]}")
+        # self.load_finish = True
+        # self.resize_timer_event()
+        self.show()
 
     def load_last_comic(self):
-        print("打开上次的漫画")
+        print_(f"阅读器：def load_last_comic(self):打开上次的漫画")
         # if not os.path.exists(self.file_path):
         #     return
         db = QSqlDatabase("QSQLITE")
@@ -183,15 +171,15 @@ class ImageViewer(QWidget, Reader):
                 self.last_comic_path = query.value(0)
                 self.load_old_comic(self.last_comic_path)
             else:
-                print("169 load_last_comic没有上次打开信息")
+                print_("169 load_last_comic没有上次打开信息")
         else:
-            print("171 load_last_comic上次打开漫画失败")
+            print_("171 load_last_comic上次打开漫画失败")
             pass
         db.close()
         self.jump_to_page()
 
     def load_old_comic(self, path, library_name=None, library_path=None, comic_name=None, belong_path=None):
-        print("打开漫画", path)
+        print_(f"阅读器：def load_old_comic 打开漫画{path}")
         self.library_name = library_name
         self.library_path = library_path
         self.comic_name = comic_name
@@ -222,7 +210,7 @@ class ImageViewer(QWidget, Reader):
                 self.get_location(self.scrollArea.verticalScrollBar().value())
                 self.setWindowTitle(f"阅读器:{os.path.basename(self.last_comic_path)[:-4]},上次阅读到{self.read_pages}页")
             else:
-                print("207  load_old_comic没有上次打开信息")
+                print_("\t\tload_old_comic没有上次打开信息")
                 self.init_self()
                 self.file_path = path
                 self.open_type = 'load_old_comic_2'
@@ -236,12 +224,13 @@ class ImageViewer(QWidget, Reader):
             self.load_images()  # 第一步，先获取所有图片信息
             self.lineEdit.setText("1")
             self.get_location(self.scrollArea.verticalScrollBar().value())  # 第二部展示当前进度应该展示的几张图片
-            print("load_old_comic上次打开漫画失败")
+            print_("load_old_comic上次打开漫画失败")
             pass
         db.close()
         self.jump_to_page()
 
     def init_self(self):
+        print_(f"阅读器：def init_self(self):")
         self.current_index = 0
         self.imageListName = []
         self.totalHeight = 0
@@ -259,11 +248,13 @@ class ImageViewer(QWidget, Reader):
         self.scrollAreaWidgetContents.setFixedHeight(0)
 
     def on_time_out(self, value):
+        print_(f"阅读器：def on_time_out(self, {value})")
         # print("滚动距离为：", value, " 总高度为：", self.totalHeight)
         self.get_location(value)
 
     # 滚动滚轮事件
     def on_scroll(self):
+        # print_(f"阅读器：def on_scroll(self)")
         for i in range(0, len(self.size_scale_height)-1):
             if sum(self.size_scale_height[:i+1]) >= self.scrollArea.verticalScrollBar().value():
                 self.lineEdit.setText(str(i+1))
@@ -275,6 +266,7 @@ class ImageViewer(QWidget, Reader):
 
     # 判断打开文件是否已经打开过
     def is_opened(self, file):
+        print_(f"阅读器：def is_opened(self, {file})")
         db = QSqlDatabase("QSQLITE")
         db.setDatabaseName("userdata/ComicReadInfo.comic")
         db.open()
@@ -289,6 +281,7 @@ class ImageViewer(QWidget, Reader):
 
     # 打开单独漫画文件时
     def get_file(self):
+        print_(f"阅读器：def get_file(self)")
         last_path = self.settings.value("lastOpenPath", "")
         new_path = QFileDialog.getOpenFileName(self, "选择文件", last_path, filter='*.zip')[0]
         if new_path:
@@ -321,6 +314,7 @@ class ImageViewer(QWidget, Reader):
     # 从数据库中加载当前漫画所有页面信息，并加载所有页面对应的label，
     # 但不设置pixmap，只在set_pictures()中更新当前窗口应该展示的页面
     def get_img_name_list_from_database(self, comic_path):
+        print_(f"阅读器：def get_img_name_list_from_database(self, {comic_path}):")
         comic_path = replace_path(comic_path)
         db = QSqlDatabase("QSQLITE")
         db.setDatabaseName("userdata/ComicsPagesInfo.comic")
@@ -345,12 +339,8 @@ class ImageViewer(QWidget, Reader):
                     size = [self.imgWidth, int(query.value(2) * self.imgWidth / query.value(1))]
                     self.size_scale[query.value(0)] = size
                     self.totalHeight += size[1]
-                print("354 get_img_name_list_from_database从数据库获取漫画页面数据：", comic_path)
                 self.imageListName = img_sort(self.imageListName)
-                # for i in self.imageListName:
-                #     print(i)
-                # 设置总页数
-                self.label.setText(str(len(self.imageListName)))
+                self.label.setText(str(len(self.imageListName)))  # 设置总页数
                 if len(self.imageListName) <= 0:
                     return False
 
@@ -372,82 +362,22 @@ class ImageViewer(QWidget, Reader):
     # 用于加载展示图片的labels，将漫画所有页面对应的label全不加载，
     # 但不设置pixmap，只在set_pictures()中更新当前窗口应该展示的页面
     def load_images(self):
+        print_(f"阅读器：def load_images(self): {self.file_path}")
         no_pages_flag = True
         if is_saved_comic_page_info(self.file_path):  # 如果保留了页面信息
-            start = time.time()
             self.get_img_name_list_from_database(self.file_path)
-            print("从数据库加载页面数据耗时：", time.time()-start)
             no_pages_flag = False
             self.show()
             self.load_finish = True
+            self.scrollAreaWidgetContents.setFixedHeight(self.totalHeight)
+            # 按图片顺序存储每张图片缩放后的高度
+            for i, n in enumerate(self.imageListName):
+                self.size_scale_height.append(self.size_scale[n][1])
             pass
         if self.file_path.lower().endswith('.zip') and no_pages_flag:  # 没有保留页面信息，则从zip文件读取图片信息保留
-            # self.load_process.show()
-            # self.load_process_thread.start()
-            start = time.time()
-            with zipfile.ZipFile(self.file_path, 'r') as zip_ref:
-                # 将图片文件添加到列表
-                for n in zip_ref.namelist():
-                    if n.lower().endswith(('.png', '.jpg', '.jpeg')):
-                        self.imageListName.append(n)
-                # 根据提取的数字对文件名进行排序
-                self.imageListName = img_sort(self.imageListName)
-                # 设置总页数
-                self.label.setText(str(len(self.imageListName)))
-                num = 0
-                self.size_scale = {}
-                for page_name in self.imageListName:
-                    num = num % 3
-                    if page_name.lower().endswith(('.png', '.jpg', '.jpeg')):
-                        label = QLabel()
-                        size = Image.open(zip_ref.open(page_name)).size
-                        self.size_origin[page_name] = size
-                        save_comic_pages_info(self.file_path, page_name, size[0], size[1])
-                        size = [self.imgWidth, int(size[1]*self.imgWidth/size[0])]
-                        self.size_scale[page_name] = size
-                        self.totalHeight += size[1]
-                        label.setFixedSize(size[0], size[1])
-                        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                        label.setStyleSheet(self.background[num])
-                        label.setObjectName(page_name)
-                        label.setScaledContents(True)
-                        self.labels[page_name] = label
-                        self.fill_contents(label)
-                        num += 1
-            print("393 从压缩包加载页面数据耗时：", time.time() - start)
-
-        elif self.file_path.lower().endswith('.rar') and no_pages_flag:
-            with rarfile.RarFile(self.file_path) as rar_ref:
-                # 将图片文件添加到列表
-                for n in rar_ref.namelist():
-                    if n.lower().endswith(('.png', '.jpg', '.jpeg')):
-                        self.imageListName.append(n)
-                # 根据提取的数字对文件名进行排序
-                self.imageListName = img_sort(self.imageListName)
-                self.label.setText(str(len(self.imageListName)))
-                num = 0
-                self.size_scale = {}
-                for page_name in rar_ref.namelist():
-                    num = num % 3
-                    if page_name.lower().endswith(('.png', '.jpg', '.jpeg')):
-                        label = QLabel()
-                        size = Image.open(rar_ref.open(page_name)).size
-                        self.size_origin[page_name] = size
-                        size = [self.imgWidth, int(size[1] * self.imgWidth / size[0])]
-                        self.size_scale[page_name] = size
-                        self.totalHeight += size[1]
-                        label.setFixedSize(size[0], size[1])
-                        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                        label.setStyleSheet(self.background[num])
-                        label.setObjectName(page_name)
-                        self.labels[page_name] = label
-                        self.fill_contents(label)
-                        num += 1
-
-        self.scrollAreaWidgetContents.setFixedHeight(self.totalHeight)
-        # 按图片顺序存储每张图片缩放后的高度
-        for i, n in enumerate(self.imageListName):
-            self.size_scale_height.append(self.size_scale[n][1])
+            # 启动子线程初始化页面信息，完成后再调用self.load_old_comic()，即可在数据库中加载数据
+            self.load_process.show()
+            self.load_process_thread.start()
 
     # 调整阅读界面的大小
     def resizeEvent(self, event: PySide6.QtGui.QResizeEvent) -> None:
@@ -457,6 +387,7 @@ class ImageViewer(QWidget, Reader):
 
     # 调整阅读界面的大小
     def resize_timer_event(self):
+        print_(f"阅读器：def resize_timer_event(self)")
         # print("界面变化调整")
         if self.totalHeight > 0:
             old_ratio = self.scrollArea.verticalScrollBar().value()/self.totalHeight
@@ -485,24 +416,20 @@ class ImageViewer(QWidget, Reader):
 
     # 计算当前窗口滚动页面对应哪张图片
     def get_location(self, value):
-        if self.first_load_flag:
-            print("初次加载")
+        print_(f"阅读器：def get_location(self, {value}), self.current_index={self.current_index}")
+        if self.first_load_flag:  # 判断是否为第一次加载
             self.first_load_flag = False
             self.set_pictures(0)
             return
-        # print(self.current_index, sum(self.size_scale_height[:self.current_index - 2]),
-        #       value, sum(self.size_scale_height[:self.current_index+2]))
-        if self.current_index - 1 < 0:
-            if sum(self.size_scale_height[:self.current_index + 2]) > value:
-                return
-        elif self.current_index + 1 > len(self.imageListName)-1:
-            if sum(self.size_scale_height[:self.current_index - 2]) < value:
-                return
-        else:
-            if sum(self.size_scale_height[:self.current_index]) < value < sum(self.size_scale_height[:self.current_index+2]):
-                return
-        # if self.current_index
-        # print("get_location: 更新图片")
+        # if self.current_index - 1 < 0:
+        #     if sum(self.size_scale_height[:self.current_index + 2]) > value:
+        #         return
+        # elif self.current_index + 1 > len(self.imageListName)-1:
+        #     if sum(self.size_scale_height[:self.current_index - 2]) < value:
+        #         return
+        # else:
+        #     if sum(self.size_scale_height[:self.current_index]) < value < sum(self.size_scale_height[:self.current_index+2]):
+        #         return
         for i, n in enumerate(self.imageListName):
             if sum(self.size_scale_height[:i+1]) > value:
                 self.current_index = i
@@ -511,6 +438,7 @@ class ImageViewer(QWidget, Reader):
 
     # 从zip文件中读取应该显示的图片
     def set_pictures(self, index, list_len=4):
+        print_(f"阅读器：def set_pictures(self, {index}, {list_len}):")
         old_show_list = self.show_list
         self.show_list = []
         for i in range(2 * list_len):  # 只显示当前页面前后list_len页，共2*list_len页。
@@ -536,9 +464,18 @@ class ImageViewer(QWidget, Reader):
                         self.labels[n].setPixmap(pixmap)
 
     # 跳转到指定页面
-    def jump_to_page(self):
+    def jump_to_page(self, j_page=0):
+        print_(f"阅读器：def jump_to_page(self):")
+        if j_page:
+            index = int(self.lineEdit.text())
+            height = sum(self.size_scale_height[:index])
+            self.scrollArea.verticalScrollBar().setValue(height)
+            return
         index = int(self.lineEdit.text())
         height = sum(self.size_scale_height[:index])
+        if height < 0:
+            self.scrollArea.verticalScrollBar().setValue(0)
+            return
         self.scrollArea.verticalScrollBar().setValue(height)
 
     # 显示进度条和隐藏进度条：
@@ -553,6 +490,9 @@ class ImageViewer(QWidget, Reader):
     # 滑动进度条事件
     def slid_horizontal_slider(self):
         value = self.horizontalSlider.value()
+        # if value == self.horizontalSlider.maximum():
+        #     self.jump_to_page(int(self.label.text()))
+        #     return
         self.scrollArea.verticalScrollBar().setValue(self.totalHeight*(value/self.horizontalSlider.maximum()))
 
     # 上下左右(W S A D)按钮事件
@@ -575,12 +515,14 @@ class ImageViewer(QWidget, Reader):
 
     # 程序结束前保存此次comic的信息
     def closeEvent(self, event: PySide6.QtGui.QCloseEvent) -> None:
+        start = time.time()
         save_comic_read_info(self.file_path, int(self.lineEdit.text()))
         save_read_info_to_comic_list(self.file_path, int(self.lineEdit.text()))
         if self.library_path:
-            print("更新阅读进度到漫画所在库")
+            print("\t\t更新阅读进度到漫画所在库")
             update_read_pages(self.library_path, self.library_name, self.belong_path,
                               self.comic_name, int(self.lineEdit.text()))
+        print_(f"阅读器：def closeEvent：保存阅读进度耗时：{time.time()-start}")
         super().closeEvent(event)
 
 
@@ -611,6 +553,7 @@ def is_saved_comic_page_info(comic_path):
 
 # 更新漫画阅读页数到所在库目录下comics.comic
 def update_read_pages(library_path, library_name, belong_path, comic_name, read_pages):
+    print_(f"阅读器：def update_read_pages({library_path}, {library_name}, {belong_path}, {comic_name}, {read_pages})")
     db = QSqlDatabase("QSQLITE")
     db.setDatabaseName(replace_path(os.path.join(library_path, ".library/comics.comic")))
     db.open()
@@ -622,14 +565,14 @@ def update_read_pages(library_path, library_name, belong_path, comic_name, read_
     """
     # print(query_udate)
     if query.exec(query_udate):
-        print("更新进度成功")
+        print("\t\t更新进度成功")
     else:
         print(query.lastError())
 
 
 # 保存本次打开漫画阅读到的页数
 def save_comic_read_info(comic_path, read_pages):
-    print("保存信息")
+    print_(f"阅读器：def save_comic_read_info({comic_path}, {read_pages})")
     db = QSqlDatabase("QSQLITE")
     db.setDatabaseName("userdata/ComicReadInfo.comic")
     db.open()
@@ -681,6 +624,7 @@ def save_comic_read_info(comic_path, read_pages):
 
 
 def save_read_info_to_comic_list(comic_path, read_pages):
+    print_(f"阅读器：def save_read_info_to_comic_list({comic_path}, {read_pages})")
     qsl_db = QSqlDatabase("QSQLITE")
     qsl_db.setDatabaseName("userdata/ComicList.comic")
     qsl_db.open()
@@ -710,6 +654,11 @@ def save_read_info_to_comic_list(comic_path, read_pages):
                         WHERE comic_path='{comic_path}'
                     """)
     qsl_db.close()
+
+
+def print_(str_, flag=False):
+    if flag:
+        print(str_)
 
 
 if __name__ == '__main__':
