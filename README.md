@@ -13,3 +13,12 @@
 ![ComicReader/images/20250202144943.png at main · kchsunny/ComicReader (github.com)](https://github.com/kchsunny/ComicReader/blob/main/images/20250202144943.png)
 
 对于首次加载图片数量很多的漫画会卡几秒钟
+
+
+
+打包程序：终端运行：
+
+```bash
+pyinstaller 书库.spec
+```
+
