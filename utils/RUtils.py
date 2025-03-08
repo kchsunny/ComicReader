@@ -467,12 +467,14 @@ class LBottomPreviewItem(QWidget, part4_pre_Item.Ui_Form):
         pass
 
     def read_self(self):
-        viewer = ImageViewer()
+        print_or_not(f"RUtils -> LBottomPreviewItem -> def read_self(self):{self.comic_path}")
+        viewer = ImageViewer(load_last=False)
         viewer.load_old_comic(self.comic_path, self.comic_name)
         # viewer.show()
         pass
 
     def delete_self(self):
+        print_or_not(f"RUtils -> LBottomPreviewItem -> def read_self(self):{self.comic_path}")
         db = "userdata/ComicList.comic"
         query = f"DELETE FROM comics WHERE comic_path='{self.comic_path}' AND list_name='{self.list_name}'"
         if database_operate(query, db):

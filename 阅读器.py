@@ -78,6 +78,9 @@ class LoadComicProcess(QWidget, load_new_comic_process.Ui_Form):
 
 class ImageViewer(QWidget, Reader):
     def __init__(self, load_last=True):
+        """
+        :param load_last: bool：True/False 是否自动加载上次打开的漫画
+        """
         super().__init__()
         self.setWindowIcon(QIcon("./resource/reading_black.png"))
         self.setWindowTitle("阅读器")
@@ -397,12 +400,16 @@ class ImageViewer(QWidget, Reader):
         self.totalHeight = 0
         self.size_scale = {}
         self.size_scale_height = [0]
-        for n in self.imageListName:
-            self.totalHeight += int(self.size_origin[n][1]*self.imgWidth/self.size_origin[n][0])
-            size = [self.imgWidth, int(self.size_origin[n][1]*self.imgWidth/self.size_origin[n][0])]
-            self.labels[n].setFixedSize(size[0], size[1])
-            self.size_scale[n] = size
-            self.size_scale_height.append(size[1])
+        try:
+            for n in self.imageListName:
+                self.totalHeight += int(self.size_origin[n][1]*self.imgWidth/self.size_origin[n][0])
+                size = [self.imgWidth, int(self.size_origin[n][1]*self.imgWidth/self.size_origin[n][0])]
+                self.labels[n].setFixedSize(size[0], size[1])
+                self.size_scale[n] = size
+                self.size_scale_height.append(size[1])
+        except Exception:
+            print(f"\t\t阅读器：def resize_timer_event(self)：except {Exception}")
+            return
         self.scrollAreaWidgetContents.setFixedHeight(self.totalHeight)
         # print("界面大小变化")
         for n in self.show_list:
@@ -665,5 +672,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     viewer = ImageViewer()
     viewer.show()
-    viewer.jump_to_page()
     app.exec()

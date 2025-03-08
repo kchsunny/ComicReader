@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file '右半区域.ui'
+## Form generated from reading UI file '右半区域WEBNzK.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.7.2
 ##
@@ -214,6 +214,7 @@ class Ui_Form(object):
         font1 = QFont()
         font1.setFamilies([u"\u65b9\u6b63\u7c97\u9ed1\u5b8b\u7b80\u4f53"])
         self.pushButton_jump_page.setFont(font1)
+        self.pushButton_jump_page.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.pushButton_jump_page.setStyleSheet(u"color:white;")
 
         self.horizontalLayout.addWidget(self.pushButton_jump_page)
@@ -292,6 +293,9 @@ class Ui_Form(object):
         self.pushButton_next_page.setText(QCoreApplication.translate("Form", u"\u4e0b\u4e00\u9875", None))
         self.pushButton_last_page.setText("")
         self.pushButton_jump_page.setText(QCoreApplication.translate("Form", u"\u8df3\u8f6c", None))
+#if QT_CONFIG(tooltip)
+        self.label.setToolTip(QCoreApplication.translate("Form", u"20~100", None))
+#endif // QT_CONFIG(tooltip)
         self.label.setText(QCoreApplication.translate("Form", u"\u5206\u9875\u6570:", None))
 #if QT_CONFIG(tooltip)
         self.pushButton_small.setToolTip("")
