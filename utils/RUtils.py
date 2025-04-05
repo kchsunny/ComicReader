@@ -260,8 +260,8 @@ class LTopPreviewItem(QWidget, part4_pre_Item.Ui_Form):
             while query.next():
                 cover = query.value(0)
                 print(f"从磁盘删除成功：\n封面 {cover}")
-                # os.remove(cover)
-                # os.remove(os.path.join(self.belong_path, self.comic_name))
+                # os.remove(cover)  # 删除封面图片
+                # os.remove(os.path.join(self.belong_path, self.comic_name))  # 删除zip文件
             if query.exec(query_delete):
                 print(f"漫画：{os.path.join(self.belong_path, self.comic_name)}")
                 self.shelf_right_area.preview_list_label.pop(self.comic_path)
