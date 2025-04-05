@@ -9,7 +9,7 @@ from PySide6.QtGui import QPixmap, QIcon
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
 from PySide6.QtCore import Qt, QTimer, QSettings, QThread, Signal
 from UIParts.reader import Ui_Form as Reader
-from utils import img_sort, replace_path, save_comic_pages_info
+from utils import img_sort, replace_path, save_comic_pages_info, IMG_TYPE
 from UIParts import load_new_comic_process
 from PIL import Image
 
@@ -40,7 +40,7 @@ class LoadComicThread(QThread):
         with zipfile.ZipFile(self.parent.file_path, 'r') as zip_ref:
             # 将图片文件添加到列表
             for n in zip_ref.namelist():
-                if n.lower().endswith(('.png', '.jpg', '.jpeg')):
+                if n.lower().endswith(IMG_TYPE):
                     self.parent.imageListName.append(n)
             # 根据提取的数字对文件名进行排序
             self.parent.imageListName = img_sort(self.parent.imageListName)
@@ -51,7 +51,7 @@ class LoadComicThread(QThread):
             total = len(self.parent.imageListName)
             for page_name in self.parent.imageListName:
                 num += 1
-                if page_name.lower().endswith(('.png', '.jpg', '.jpeg')):
+                if page_name.lower().endswith(IMG_TYPE):
                     label = QLabel()
                     size = Image.open(zip_ref.open(page_name)).size
                     self.parent.size_origin[page_name] = size
@@ -348,7 +348,7 @@ class ImageViewer(QWidget, Reader):
                     return False
 
                 for page_name in self.imageListName:
-                    if page_name.lower().endswith(('.png', '.jpg', '.jpeg')):
+                    if page_name.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
                         label = QLabel()
                         label.setFixedSize(self.size_scale[page_name][0], self.size_scale[page_name][1])
                         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -670,6 +670,6 @@ def print_(str_, flag=False):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    viewer = ImageViewer()
+    viewer = ImageViewer(load_last=False)
     viewer.show()
     app.exec()
