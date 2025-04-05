@@ -532,25 +532,25 @@ class RightArea(QWidget, RArea):
         self.pushButton_delete.setVisible(False)
         self.pushButton_collect.setVisible(False)
         self.cover_path = r"D:\Data\comics\.library\covers"
-        self.preview_list_label = []   # 存储预览展示的所有comic
-        self.preview_dir_list_label = []   # 存储预览选择文件夹中所有的comic
-        self.current_preview_list_label = []  # 存储当前要预览的comic
-        self.searching_preview_list_label = []  # 存储搜索的comic
+        self.preview_list_label = []                # 存储预览展示的所有comic
+        self.preview_dir_list_label = []            # 存储预览选择文件夹中所有的comic
+        self.current_preview_list_label = []        # 存储当前要预览的comic
+        self.searching_preview_list_label = []      # 存储搜索的comic
         self.libraryPath = ""
         # self.recent_preview_layout = QHBoxLayout(self.widget_recent)
         self.preview_layout = QGridLayout(self.widget_comics)
         self.preview_layout.setContentsMargins(3, 3, 3, 3)
         self.horizontalSlider.valueChanged.connect(self.view_size_change)
-        self.start_rows = 0   # 当前窗口展示的封面的第一行
-        self.end_rows = 1    # 当前窗口展示的封面的最后一行
-        self.preview_width = 150  # 根据view_size_level 和base_preview_width 设置当前预览封面大小
-        self.base_preview_width = 150  # 预览基础大小--不变值
-        self.view_size_level = 0  # 用来设置预览封面的大小的等级
-        self.columns = 0  # 用来设置gridlayout的列数
-        self.preview_index = 0  # 用来标记是哪一个部分的展示预览：LTop、LBottom、LMid
-        self.max_page = 0   # 最大分页数
-        self.current_page = 1  # 当前所在页
-        self.page_covers_numb = 40  # 每页预览数量，默认40
+        self.start_rows = 0                             # 当前窗口展示的封面的第一行
+        self.end_rows = 1                               # 当前窗口展示的封面的最后一行
+        self.preview_width = 150                        # 根据view_size_level 和base_preview_width 设置当前预览封面大小
+        self.base_preview_width = 150                   # 预览基础大小--不变值
+        self.view_size_level = 0                        # 用来设置预览封面的大小的等级
+        self.columns = 0                                # 用来设置gridlayout的列数
+        self.preview_index = 0                          # 用来标记是哪一个部分的展示预览：LTop、LBottom、LMid
+        self.max_page = 0                               # 最大分页数
+        self.current_page = 1                           # 当前所在页
+        self.page_covers_numb = 40                      # 每页预览数量，默认40
         self.resize_timer = QTimer(self)
         self.resize_timer.setSingleShot(True)
         self.resize_timer.timeout.connect(self.reset_view_size)
@@ -582,6 +582,7 @@ class RightArea(QWidget, RArea):
         self.set_current_preview_timer = QTimer(self)
         self.set_current_preview_timer.setSingleShot(True)
         self.set_current_preview_timer.timeout.connect(lambda: self.set_page_preview(self.current_page))
+        self.scrollArea.horizontalScrollBar().setCursor(Qt.CursorShape.SizeHorCursor)
 
     def reset_page_numbs(self):
         # print(self.page_covers_numb)

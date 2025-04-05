@@ -135,10 +135,10 @@ class CreateStorageThreat(QThread):
             img_names = zip_file.namelist()
             img_names = img_sort(img_names)
             for n in img_names:
-                if n.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+                if n.endswith(IMG_TYPE):
                     comic_pages += 1
             for origin_name in img_names:
-                if origin_name.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+                if origin_name.endswith(IMG_TYPE):
                     hash_object = hashlib.sha256()
                     # 更新哈希对象，需要将字符串编码为字节
                     hash_object.update(f_n.encode())

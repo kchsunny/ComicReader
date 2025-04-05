@@ -9,6 +9,9 @@ from PySide6.QtGui import QIcon, QPixmap, QResizeEvent, QAction, QCursor
 import PySide6
 import re
 
+# 漫画图片的类型，按需追加
+IMG_TYPE = ('.png', '.jpg', '.jpeg', '.bmp', '.gif', '.webp')
+
 
 # 保存漫画每页的宽高信息
 def save_comic_pages_info(comic_path, page_name, page_width, page_height):
@@ -410,6 +413,7 @@ def rename_list(new_list_name, old_list_name):
             db.close()
             return True
     return False
+
 
 # 更新库时，删除因更改文件名、删除文件而导致的数据库中找不到的漫画
 def delete_not_exist_comic_from_library(library_info_path, library_name):
