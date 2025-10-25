@@ -19,13 +19,13 @@ class QBookShelf(QWidget):
         self.setWindowTitle("书柜")
         self.setStyleSheet("QPushButton{shadow: none;}")
         self.librarycount = 0
-        self.leftTopListCount = 0  # 记录书库的数量
-        self.BOOKSIZE = [[50, 100], [100, 200]]  # 预览的最大与最小尺寸
+        self.leftTopListCount = 0                   # 记录书库的数量
+        self.BOOKSIZE = [[50, 100], [100, 200]]     # 预览的最大与最小尺寸
         self.setMinimumHeight(400)
         self.setMinimumWidth(950)
         self.setGeometry(200, 200, 916, 500)
-        self.selected_item = None  # 当前选中的Item，上、中、下
-        self.selected_library_item = None  # 当前选中的LTopItem
+        self.selected_item = None                   # 当前选中的Item，上、中、下
+        self.selected_library_item = None           # 当前选中的LTopItem
         self.SplitWindow = QSplitter(self)
         self.SplitWindow.setGeometry(0, 0, self.width(), self.height())
         self.SplitWindow.setStyleSheet("""
