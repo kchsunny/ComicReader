@@ -7,10 +7,32 @@ from PySide6.QtGui import QMouseEvent, QFont
 from PySide6.QtSql import *
 from PySide6.QtGui import QIcon, QPixmap, QResizeEvent, QAction, QCursor
 import PySide6
+import subprocess
+from pathlib import Path
+import sys
 import re
 
 # 漫画图片的类型，按需追加
 IMG_TYPE = ('.png', '.jpg', '.jpeg', '.bmp', '.gif', '.webp')
+
+
+def open_in_folder(path):
+    # 在文件管理器中打开
+    path = Path(path).resolve()
+    if not path.exists():
+        return  # 或者 raise FileNotFoundError
+    args = []
+    if sys.platform == "win32":  # Windows
+        args = ["explorer", "/select,", str(path)]
+    elif sys.platform == "darwin":  # macOS
+        args = ["open", "-R", str(path)]
+    else:  # Linux（主流桌面）
+        args = ["xdg-open", str(path.parent if path.is_file() else path)]
+    try:
+        subprocess.run(args, check=True)
+    except subprocess.CalledProcessError as e:
+        print("打开失败：", e)
+    pass
 
 
 # 保存漫画每页的宽高信息

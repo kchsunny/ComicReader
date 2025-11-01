@@ -70,7 +70,7 @@ class LTopPreviewItem(QWidget, part4_pre_Item.Ui_Form):
             }
         """)
         try:
-            self.progressBar.setValue(int(100*read_pages/pages))
+            self.progressBar.setValue(int(100 * read_pages / pages))
         except:
             self.progressBar.setValue(0)
         self.set_cover(pixmap_cover, recent=True)
@@ -177,6 +177,10 @@ class LTopPreviewItem(QWidget, part4_pre_Item.Ui_Form):
         copy_path_action.setIcon(QIcon("resource/复制_black.png"))
         copy_path_action.triggered.connect(self.copy_path)
 
+        copy_open_path = QAction('打开文件夹', self)
+        copy_open_path.setIcon(QIcon("resource/folderOpen_black.png"))
+        copy_open_path.triggered.connect(lambda: open_in_folder(self.comic_path))
+
         layout = QVBoxLayout()
         layout.setContentsMargins(6, 0, 0, 0)
         menu.setLayout(layout)
@@ -187,6 +191,7 @@ class LTopPreviewItem(QWidget, part4_pre_Item.Ui_Form):
         menu.addAction(add_to_action)
         menu.addAction(open_action)
         menu.addAction(copy_path_action)
+        menu.addAction(copy_open_path)
         menu.setStyleSheet("""
                     QMenu {
                         background-color: #D3D3D3; 
@@ -333,7 +338,8 @@ class LTopPreviewItem(QWidget, part4_pre_Item.Ui_Form):
 
 
 class LBottomPreviewItem(QWidget, part4_pre_Item.Ui_Form):
-    def __init__(self, list_name, pixmap_cover, comic_name, comic_path, view_width, read_pages, pages, is_collected=False, show_title=True, right_area=None, cover_path=None):
+    def __init__(self, list_name, pixmap_cover, comic_name, comic_path, view_width, read_pages, pages,
+                 is_collected=False, show_title=True, right_area=None, cover_path=None):
         super().__init__()
         self.setupUi(self)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
@@ -386,7 +392,7 @@ class LBottomPreviewItem(QWidget, part4_pre_Item.Ui_Form):
             }
         """)
         try:
-            self.progressBar.setValue(int(100*read_pages/pages))
+            self.progressBar.setValue(int(100 * read_pages / pages))
         except:
             self.progressBar.setValue(0)
 
@@ -435,6 +441,11 @@ class LBottomPreviewItem(QWidget, part4_pre_Item.Ui_Form):
         copy_path_action = QAction('复制路径', self)
         copy_path_action.setIcon(QIcon("resource/复制_black.png"))
         copy_path_action.triggered.connect(self.copy_path)
+
+        copy_open_path = QAction('打开文件夹', self)
+        copy_open_path.setIcon(QIcon("resource/folderOpen_black.png"))
+        copy_open_path.triggered.connect(lambda: open_in_folder(self.comic_path))
+
         layout = QVBoxLayout()
         layout.setContentsMargins(6, 0, 0, 0)
         menu.setLayout(layout)
@@ -443,6 +454,7 @@ class LBottomPreviewItem(QWidget, part4_pre_Item.Ui_Form):
         menu.addAction(select_action)
         menu.addAction(open_action)
         menu.addAction(copy_path_action)
+        menu.addAction(copy_open_path)
         menu.setStyleSheet("""
                     QMenu {
                         background-color: #D3D3D3; 
@@ -532,25 +544,25 @@ class RightArea(QWidget, RArea):
         self.pushButton_delete.setVisible(False)
         self.pushButton_collect.setVisible(False)
         self.cover_path = r"D:\Data\comics\.library\covers"
-        self.preview_list_label = []                # 存储预览展示的所有comic
-        self.preview_dir_list_label = []            # 存储预览选择文件夹中所有的comic
-        self.current_preview_list_label = []        # 存储当前要预览的comic
-        self.searching_preview_list_label = []      # 存储搜索的comic
+        self.preview_list_label = []  # 存储预览展示的所有comic
+        self.preview_dir_list_label = []  # 存储预览选择文件夹中所有的comic
+        self.current_preview_list_label = []  # 存储当前要预览的comic
+        self.searching_preview_list_label = []  # 存储搜索的comic
         self.libraryPath = ""
         # self.recent_preview_layout = QHBoxLayout(self.widget_recent)
         self.preview_layout = QGridLayout(self.widget_comics)
         self.preview_layout.setContentsMargins(3, 3, 3, 3)
         self.horizontalSlider.valueChanged.connect(self.view_size_change)
-        self.start_rows = 0                             # 当前窗口展示的封面的第一行
-        self.end_rows = 1                               # 当前窗口展示的封面的最后一行
-        self.preview_width = 150                        # 根据view_size_level 和base_preview_width 设置当前预览封面大小
-        self.base_preview_width = 150                   # 预览基础大小--不变值
-        self.view_size_level = 0                        # 用来设置预览封面的大小的等级
-        self.columns = 0                                # 用来设置gridlayout的列数
-        self.preview_index = 0                          # 用来标记是哪一个部分的展示预览：LTop、LBottom、LMid
-        self.max_page = 0                               # 最大分页数
-        self.current_page = 1                           # 当前所在页
-        self.page_covers_numb = 40                      # 每页预览数量，默认40
+        self.start_rows = 0  # 当前窗口展示的封面的第一行
+        self.end_rows = 1  # 当前窗口展示的封面的最后一行
+        self.preview_width = 150  # 根据view_size_level 和base_preview_width 设置当前预览封面大小
+        self.base_preview_width = 150  # 预览基础大小--不变值
+        self.view_size_level = 0  # 用来设置预览封面的大小的等级
+        self.columns = 0  # 用来设置gridlayout的列数
+        self.preview_index = 0  # 用来标记是哪一个部分的展示预览：LTop、LBottom、LMid
+        self.max_page = 0  # 最大分页数
+        self.current_page = 1  # 当前所在页
+        self.page_covers_numb = 40  # 每页预览数量，默认40
         self.resize_timer = QTimer(self)
         self.resize_timer.setSingleShot(True)
         self.resize_timer.timeout.connect(self.reset_view_size)
@@ -653,7 +665,7 @@ class RightArea(QWidget, RArea):
             if c[4] == library_name and dir_name == os.path.basename(c[5]):
                 self.preview_dir_list_label.append(c)
         self.current_preview_list_label = self.preview_dir_list_label
-        self.max_page = math.ceil(len(self.current_preview_list_label)/self.page_covers_numb)
+        self.max_page = math.ceil(len(self.current_preview_list_label) / self.page_covers_numb)
         self.spinBox_page_index.setMaximum(self.max_page)
         self.spinBox_page_index.setValue(self.current_page)
         self.show_Ltop_previews()
@@ -686,9 +698,9 @@ class RightArea(QWidget, RArea):
                     self.preview_list_label.append([cover_[0], cover_[1], cover_[3], cover_[4],
                                                     cover_[5], cover_[6], cover_[7], cover_[8], cover])
             end = time.time()
-            print("RUtils set_previews: set_previews：1 设置labels耗时：", end-start)
+            print("RUtils set_previews: set_previews：1 设置labels耗时：", end - start)
             self.current_preview_list_label = self.preview_list_label
-            self.max_page = math.ceil(len(self.current_preview_list_label)/self.page_covers_numb)
+            self.max_page = math.ceil(len(self.current_preview_list_label) / self.page_covers_numb)
             self.show_Ltop_previews()
         elif preview_index == 3:
             # [list_name, comic_name, comic_path, cover_path, collected, pages, read_pages]
@@ -701,9 +713,9 @@ class RightArea(QWidget, RArea):
                     self.preview_list_label.append([cover_[0], cover_[1], cover_[2], cover,
                                                     cover_[4], cover_[5], cover_[6]])
             end = time.time()
-            print("RUtils set_previews: set_previews：3 设置labels耗时：", end-start)
+            print("RUtils set_previews: set_previews：3 设置labels耗时：", end - start)
             self.current_preview_list_label = self.preview_list_label
-            self.max_page = math.ceil(len(self.current_preview_list_label)/self.page_covers_numb)
+            self.max_page = math.ceil(len(self.current_preview_list_label) / self.page_covers_numb)
             self.show_LBottom_previews()
         self.spinBox_page_index.setMaximum(self.max_page)
         self.spinBox_page_index.setValue(self.current_page)
@@ -729,7 +741,7 @@ class RightArea(QWidget, RArea):
                 self.preview_layout.addWidget(book, num // self.columns, num % self.columns,
                                               alignment=Qt.AlignmentFlag.AlignVCenter)
                 num += 1
-                if i+1 >= len(self.current_preview_list_label):
+                if i + 1 >= len(self.current_preview_list_label):
                     print(f'RUtils set_page_preview: 当前第{page}页，共{num}本漫画，分页数：{self.page_covers_numb}')
                     return
 
@@ -756,7 +768,7 @@ class RightArea(QWidget, RArea):
                 self.preview_layout.addWidget(book, num // self.columns, num % self.columns,
                                               alignment=Qt.AlignmentFlag.AlignVCenter)
                 num += 1
-                if i+1 >= len(self.current_preview_list_label):
+                if i + 1 >= len(self.current_preview_list_label):
                     print(f'RUtils set_page_preview: 当前第{page}页，共{num}本漫画')
                     return
         print(f'RUtils set_page_preview: 当前第{page}页，共{num}本漫画')
@@ -785,11 +797,11 @@ class RightArea(QWidget, RArea):
                 no_recent_comic = False
                 book_recent = LTopPreviewItem(QPixmap(cover), comic_name, comic_path, 250, library_path, library_name,
                                               belong_path, read_pages, pages, collected, False, self, cover)
-                self.horizontalLayout_recent.insertWidget(self.horizontalLayout_recent.count()-1, book_recent)
+                self.horizontalLayout_recent.insertWidget(self.horizontalLayout_recent.count() - 1, book_recent)
 
         # 如果有“最近阅读”，则删除book_remain， 否则添加到recent预览
         if no_recent_comic and book_remain:
-            self.horizontalLayout_recent.insertWidget(self.horizontalLayout_recent.count()-1, book_remain)
+            self.horizontalLayout_recent.insertWidget(self.horizontalLayout_recent.count() - 1, book_remain)
         else:
             book_remain.deleteLater() if book_remain else None
         end = time.time()
@@ -819,9 +831,9 @@ class RightArea(QWidget, RArea):
                 no_recent_comic = False
                 book_recent = LBottomPreviewItem(list_name, QPixmap(cover), comic_name, comic_path, 250,
                                                  read_pages, pages, collected, False, self, cover)
-                self.horizontalLayout_recent.insertWidget(self.horizontalLayout_recent.count()-1, book_recent)
+                self.horizontalLayout_recent.insertWidget(self.horizontalLayout_recent.count() - 1, book_recent)
         if no_recent_comic:
-            self.horizontalLayout_recent.insertWidget(self.horizontalLayout_recent.count()-1, book_remain)
+            self.horizontalLayout_recent.insertWidget(self.horizontalLayout_recent.count() - 1, book_remain)
         else:
             book_remain.deleteLater()
         end = time.time()
@@ -957,7 +969,7 @@ class RightArea(QWidget, RArea):
     # 展示从库文件夹中搜索的结果
     def show_search_dir_previews(self):
         self.compute_columns()
-        self.max_page = math.ceil(len(self.searching_preview_list_label)/self.page_covers_numb)
+        self.max_page = math.ceil(len(self.searching_preview_list_label) / self.page_covers_numb)
         self.spinBox_page_index.setMaximum(self.max_page)
         self.spinBox_page_index.setValue(self.current_page)
         # self.preview_layout.columnCount = self.columns
