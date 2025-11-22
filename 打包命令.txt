@@ -1,0 +1,3 @@
+pyinstaller -w -i BookShelf.ico --contents-directory libs -n BookShelf 书库.py
+
+pyinstaller -w -i reading.ico --contents-directory libs -n Reader 阅读器.py
