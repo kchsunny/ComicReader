@@ -1,5 +1,4 @@
-# from PySide6.QtWidgets import (QWidget, QScrollArea, QSplitter, QApplication, QHBoxLayout, QPushButton, QVBoxLayout,
-#                                QListWidget, QFileDialog, QSpacerItem, QSizePolicy,QMessageBox)
+from PySide6.QtWidgets import QStyleFactory
 # from PySide6.QtCore import Qt, QObject, QEvent, QSize, Signal, Slot
 # from PySide6.QtSql import *
 # import PySide6
@@ -74,6 +73,8 @@ class QBookShelf(QWidget):
 
 if __name__ == "__main__":
     app = QApplication([])
+    # print(QStyleFactory.keys())
+    app.setStyle('Fusion')
     window = QBookShelf()
     window.show()
     app.exec()

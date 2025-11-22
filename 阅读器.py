@@ -670,6 +670,7 @@ def print_(str_, flag=False):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    app.setStyle('Fusion')
     viewer = ImageViewer(load_last=False)
     viewer.show()
     app.exec()
